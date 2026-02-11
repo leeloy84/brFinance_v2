@@ -25,6 +25,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+dist/
 develop-eggs/
 downloads/
 eggs/
@@ -167,10 +168,7 @@ pip-selfcheck.json
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+
 *.code-workspace
 .DS_Store
 
@@ -190,6 +188,11 @@ pip-selfcheck.json
 ./test/reports/*.plk
 *.plk
 
-# End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,venv 
+# End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,venv
 /.ipynb_checkpoints
-/.vscode 
+/.vscode
+
+# Project specific
+simple.ipynb
+debug_*.html
+debug_*.py
