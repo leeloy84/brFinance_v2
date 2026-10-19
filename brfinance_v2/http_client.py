@@ -48,10 +48,90 @@ class CVMHttpClient:
         category: str,
         last_ref_date: bool,
     ) -> Any:
-        # ... (mantendo o código anterior até a chamada session) ...
-        # (Ajuste de payload oculto por brevidade na instrução de substituição)
-        # ...
-        
+        """Busca resultados de documentos na CVM.
+
+        Args:
+            cod_cvm: Lista de códigos CVM.
+            start_date: Data inicial.
+            end_date: Data final.
+            participant_type: Tipo de participante (ex: "1").
+            category: Categorias (ex: "EST_4").
+            last_ref_date: Se deve retornar apenas a última data de referência.
+
+        Returns:
+            Resposta da requisição.
+        """
+        cod_cvm_string = ""
+
+        if len(cod_cvm) > 0:
+            cod_cvm_string = str(",".join([f"{item}".zfill(6) for item in cod_cvm]))
+
+        data_de = ""
+        data_ate = ""
+        periodo = "0"
+
+        if start_date or end_date:
+            try:
+                data_de = start_date.strftime("%d/%m/%Y") if start_date else ""
+            except (AttributeError, ValueError):
+                data_de = ""
+
+            try:
+                data_ate = end_date.strftime("%d/%m/%Y") if end_date else ""
+            except (AttributeError, ValueError):
+                data_ate = ""
+
+            periodo = "2"
+
+        categoria = category
+        ultima_dt_ref = BOOL_STRING_MAPPER.get(last_ref_date, "N")
+
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Connection": "keep-alive",
+            "Content-Type": "application/json; charset=UTF-8",
+            "DNT": "1",
+            "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/96.0.4664.110 Safari/537.36"
+            ),
+            "X-Requested-With": "XMLHttpRequest",
+        }
+
+        # Payload JSON formatado para a CVM
+        payload = (
+            "{"
+            + f"""
+                dataDe: '{data_de}',
+                dataAte: '{data_ate}' ,
+                empresa: '{cod_cvm_string}',
+                setorAtividade: '-1',
+                categoriaEmissor: '-1',
+                situacaoEmissor: '-1',
+                tipoParticipante: '{participant_type}',
+                dataReferencia: '',
+                categoria: '{categoria}',
+                periodo: '{periodo}',
+                horaIni: '',
+                horaFim: '',
+                palavraChave:'',
+                ultimaDtRef:'{ultima_dt_ref}',
+                tipoEmpresa:'0',
+                token: '',
+                versaoCaptcha: ''
+                """
+            + "}"
+        )
+
         resp = self.session.post(
             self.LISTAR_DOCUMENTOS_URL, 
             data=payload, 
