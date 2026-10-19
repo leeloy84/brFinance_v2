@@ -13,6 +13,9 @@ import requests
 import urllib3
 from requests import Session
 
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 # Desabilita avisos de segurança de forma redundante para garantir silêncio total
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings()
@@ -35,8 +38,20 @@ class CVMHttpClientConnector:
     """Gerencia a sessão HTTP persistente para as requisições."""
 
     def __init__(self) -> None:
-        """Inicializa uma nova sessão requests."""
+        """Inicializa uma nova sessão requests com política de retry."""
         self._connector = Session()
+
+        # Configuração de Retry: 3 tentativas, backoff de 1s, retenta em erros comuns de server/timeout
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "POST", "OPTIONS"],
+            raise_on_status=False
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self._connector.mount("https://", adapter)
+        self._connector.mount("http://", adapter)
 
     def get_connector(self) -> Session:
         """Retorna a sessão ativa.
@@ -45,3 +60,4 @@ class CVMHttpClientConnector:
             Session: Objeto de sessão do requests.
         """
         return self._connector
+
